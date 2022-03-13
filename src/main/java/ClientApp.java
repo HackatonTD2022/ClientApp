@@ -1,26 +1,15 @@
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+/*
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
-import javax.bluetooth.*;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Vector;
 
 
 public class ClientApp extends Application {
@@ -53,8 +42,6 @@ public class ClientApp extends Application {
         }
     }
 
-
-
     public void testBluetooth() {
         Loop lp = new Loop();
 
@@ -69,9 +56,10 @@ public class ClientApp extends Application {
             }
         }
 
-        String path = "C:\\Users\\Damirka\\IdeaProjects\\Hackaton-TD2022-DesktopClient\\src\\main\\resources\\qrcode.png";
+        String path = "qrcode.png";
         Image image = new Image(path);
         imageView.setImage(image);
 
     }
 }
+*/

@@ -2,29 +2,32 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import io.github.shashankn.qrterminal.QRCode;
 
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.LocalDevice;
-import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.UUID;
 
 public class Loop implements Runnable {
 
-    private String uuidStr = "d0c722b07e1511e1b0c40800200c9a66";
+    private UUID uuid;
     private boolean ready = false;
 
     /** Constructor */
     public Loop() {
+        uuid = UUID.randomUUID();
     }
 
     private static void generateQRCode(String text, int width, int height, String filePath) throws Exception {
         QRCodeWriter qcwobj = new QRCodeWriter();
         BitMatrix bmobj = qcwobj.encode(text, BarcodeFormat.QR_CODE, width, height);
-        Path pobj = FileSystems.getDefault().getPath("src/main/resources/" + filePath);
+        Path pobj = FileSystems.getDefault().getPath(filePath);
         MatrixToImageWriter.writeToPath(bmobj, "PNG", pobj);
     }
 
@@ -48,23 +51,44 @@ public class Loop implements Runnable {
         // setup the server to listen for connection
         try {
             local = LocalDevice.getLocalDevice();
-            System.out.println("Address: " + local.getBluetoothAddress());
-            System.out.println("Name: " + local.getFriendlyName());
+
             local.setDiscoverable(DiscoveryAgent.GIAC);
 
             StringBuilder str = new StringBuilder();
-            str.append("UUID: ").append(uuidStr).append("\n");
-            str.append("Address: ").append(local.getBluetoothAddress()).append("\n");
+
+            str.append("UUID: ").append(uuid.toString()).append("\n");
+
+            StringBuilder sbAddress = new StringBuilder();
+            char[] arr = local.getBluetoothAddress().toCharArray();
+            for(int i = 0; i < arr.length; i++) {
+                sbAddress.append(arr[i]);
+                if(i % 2 == 1)
+                    sbAddress.append(':');
+            }
+            String address = sbAddress.substring(0, sbAddress.length() - 1);
+
+            str.append("Address: ").append(address).append("\n");
             str.append("Name: ").append(local.getFriendlyName());
 
+            System.out.println(QRCode.from(str.toString())
+                    .withSize(5,5)
+                    .withMargin(1)
+                    .withErrorCorrection(ErrorCorrectionLevel.H)
+                    .generate());
+
             generateQRCode(str.toString(),1250, 1250, "qrcode.png");
+
+            System.out.println("Address: " + local.getBluetoothAddress());
+            System.out.println("Name: " + local.getFriendlyName());
+            System.out.println("UUID: " + uuid.toString());
+
+            String uuidStr = uuid.toString().replaceAll("-", "");
+
+            String url = "btspp://localhost:" + uuidStr + ";name=RemoteBluetooth";
+            System.out.println("URL: " + url);
+            notifier = (StreamConnectionNotifier)Connector.open(url);
+
             ready = true;
-
-            UUID uuid = new UUID(uuidStr, false);
-            System.out.println(uuid.toString());
-
-            String url = "btspp://localhost:" + uuid.toString() + ";name=RemoteBluetooth";
-            notifier = (StreamConnectionNotifier) Connector.open(url);
         } catch (Exception e) {
             e.printStackTrace();
             return;
