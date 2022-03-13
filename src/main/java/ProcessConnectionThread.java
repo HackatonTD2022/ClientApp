@@ -2,7 +2,6 @@ import javax.microedition.io.StreamConnection;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class ProcessConnectionThread implements Runnable {
@@ -118,7 +117,7 @@ public class ProcessConnectionThread implements Runnable {
                 if(Objects.isNull(msg))
                     continue;
 
-                else if(strEq(msg, "close")) {
+                if(strEq(msg, "close")) {
                     running = false;
                     System.out.println("Close socket");
                     serializeUserList();
@@ -132,6 +131,7 @@ public class ProcessConnectionThread implements Runnable {
                         if(u.UserName.equals(user.UserName) && u.UUID.equals(user.UUID)) {
                             System.out.println("Login success");
                             // login by bash script
+                            runLoginBash(user);
                             flag = true;
                             break;
                         }
@@ -160,12 +160,37 @@ public class ProcessConnectionThread implements Runnable {
                         sendToServer("ok");
                         System.out.println("Registered new user " + user.UserName);
                         // register by bash script
+                        runRegisterBash(user);
                     } else {
                         sendToServer("fail");
                     }
                 }
 
             }
+        }
+    }
+
+    private void runLoginBash(User user) {
+        try {
+            String[] cmd = new String[]{"/bin/sh", "/usr/bin/xinit_user", user.UserName};
+            Process pr = Runtime.getRuntime().exec(cmd);
+            //Process p = new ProcessBuilder("/bin/sh /usr/bin/xinit_user", user.UserName).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void runRegisterBash(User user) {
+        //StringBuilder sb = new StringBuilder();
+        //sb.append(user.UserName).append(' ').append(user.UUID);
+
+
+        try {
+            String[] cmd = new String[]{"/bin/sh", "/usr/bin/create_user", user.UserName, user.UUID};
+            Process pr = Runtime.getRuntime().exec(cmd);
+            //Process p = new ProcessBuilder("/bin/sh /usr/bin/create_user", sb.toString()).start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
